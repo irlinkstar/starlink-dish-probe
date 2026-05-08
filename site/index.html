@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Starlink Dish Probe" />
+    <title>Starlink Dish Probe</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0b0f14;
+        color: #e6edf3;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .card {
+        background: #161b22;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        width: 320px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #58a6ff;
+    }
+
+    .status {
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 16px;
+    }
+
+    .ok { background: rgba(46,160,67,0.2); color: #2ea043; }
+    .fail { background: rgba(248,81,73,0.2); color: #f85149; }
+    .loading { background: rgba(88,166,255,0.15); color: #58a6ff; }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Network Probe</h1>
+    <div id="status" class="status loading">
+        Checking connectivity...
+    </div>
+</div>
+
+<script>
+
+const statusEl = document.getElementById("status");
+
+function setStatus(text, cls) {
+    statusEl.className = "status " + cls;
+    statusEl.textContent = text;
+}
+
+async function checkStarlink() {
+
+    const controller = new AbortController();
+
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, 3000); // 🔥 hard timeout (3s)
+
+    const url = "http://192.168.100.1/favicon.ico?" + Date.now();
+
+    const start = performance.now();
+
+    try {
+
+        await fetch(url, {
+            mode: "no-cors",
+            cache: "no-store",
+            signal: controller.signal
+        });
+
+        clearTimeout(timeout);
+
+        const ms = performance.now() - start;
+
+        setStatus(
+            "Possible Starlink detected (" +
+            ms.toFixed(0) + "ms)",
+            "ok"
+        );
+
+    } catch (e) {
+
+        clearTimeout(timeout);
+
+        setStatus(
+            "No Starlink detected",
+            "fail"
+        );
+    }
+}
+
+checkStarlink();
+
+</script>
+
+</body>
+</html>
